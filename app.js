@@ -3,9 +3,18 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const { Pool } = require('pg')
+
+const pool = new Pool({
+  user: 'rubi',
+  host: 'localhost',
+  database: 'cobadb',
+  password: '12345',
+  port: 5432,
+})
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/users')(pool);
 
 var app = express();
 
