@@ -1,10 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var moment = require('moment')
+const { isLoggedIn } = require('../helpers/util')
+const path = require('path')
 
 module.exports = function (db) {
 
-  router.get('/', async function (req, res) {
+  router.get('/', isLoggedIn, async function (req, res) {
     try {
       const url = req.url == '/' ? '/users?page=1' : `/users${req.url}`
 
@@ -53,7 +55,8 @@ module.exports = function (db) {
           pages,
           page,
           query: req.query,
-          url
+          url,
+          user: req.session.user
         })
       })
     } catch (e) {
@@ -63,18 +66,18 @@ module.exports = function (db) {
   })
 
 
-  router.get('/add', function (req, res) {
+  router.get('/add', isLoggedIn, function (req, res) {
     res.render('users/form', { item: {} })
   })
 
-  router.post('/add', function (req, res) {
+  router.post('/add', isLoggedIn, function (req, res) {
     db.query('INSERT INTO users (name, birthdate) VALUES ($1, $2)', [req.body.name, req.body.birthdate], (err, { rows }) => {
       if (err) return res.send(err)
       res.redirect('/users')
     })
   })
 
-  router.get('/edit/:id', function (req, res) {
+  router.get('/edit/:id', isLoggedIn, function (req, res) {
     const id = req.params.id
     db.query('SELECT * FROM users WHERE id = $1', [id], (err, { rows }) => {
       if (err) return res.send(err)
@@ -84,14 +87,28 @@ module.exports = function (db) {
 
   })
 
-  router.post('/edit/:id', function (req, res) {
-    db.query('UPDATE users SET name = $1, birthdate = $2 WHERE id = $3', [req.body.name, req.body.birthdate, req.params.id], (err, { rows }) => {
-      if (err) return res.send(err)
-      res.redirect('/users')
+  router.post('/edit/:id', isLoggedIn, function (req, res) {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+    }
+
+    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+    const avatar = req.files.avatar;
+    const fileName = `${Date.now()}_${avatar.name}`
+    const uploadPath = path.join(__dirname, '..', 'public', 'images', fileName);
+
+    // Use the mv() method to place the file somewhere on your server
+    avatar.mv(uploadPath, function (err) {
+      if (err)
+        return res.status(500).send(err);
+      db.query('UPDATE users SET name = $1, birthdate = $2, avatar = $3 WHERE id = $4', [req.body.name, req.body.birthdate, fileName, req.params.id], (err, { rows }) => {
+        if (err) return res.send(err)
+        res.redirect('/users')
+      })
     })
   })
 
-  router.get('/delete/:id', function (req, res) {
+  router.get('/delete/:id', isLoggedIn, function (req, res) {
     db.query('DELETE FROM users WHERE id = $1', [req.params.id], (err) => {
       if (err) return res.send(err)
       res.redirect('/users')

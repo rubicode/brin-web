@@ -1,107 +1,99 @@
-<!DOCTYPE html>
-<html lang="en">
+<%- include('../partials/header') %>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Belajar</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <div class="card">
+        <div class="card-header text-center">
+            <h1>
+                <%= user.name %>
+            </h1>
+        </div>
+        <div class="card-body">
+            <form action="" method="get">
+                <input type="hidden" name="page" value="1">
+                <div class="row mb-3">
+                    <label for="name" class="col-sm-2 col-form-label">Name</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" name="name" value="<%= query.name %>">
+                    </div>
+                </div>
 
-</head>
-
-<body>
-    <div class="container">
-
-        <div class="card">
-            <div class="card-header text-center">
-                <h1>Belajar Express</h1>
-            </div>
-            <div class="card-body">
-                <form action="" method="get">
-                    <input type="hidden" name="page" value="1">
-                    <div class="row mb-3">
-                        <label for="name" class="col-sm-2 col-form-label">Name</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" name="name" value="<%= query.name %>">
+                <div class="row mb-3">
+                    <label for="birthdate" class="col-sm-2 col-form-label">Birthdate</label>
+                    <div class="col-sm-10 row">
+                        <div class="md-5">
+                            <input type="date" class="form-control" name="startdate"
+                                value="<%= query.startdate ? moment(query.startdate).format('YYYY-MM-DD') : '' %>">
+                        </div>
+                        <div class="md-2">
+                            <p>s.d.</p>
+                        </div>
+                        <div class="md-5">
+                            <input type="date" class="form-control" name="todate"
+                                value="<%= query.todate ? moment(query.todate).format('YYYY-MM-DD') : '' %>">
                         </div>
                     </div>
-
-                    <div class="row mb-3">
-                        <label for="birthdate" class="col-sm-2 col-form-label">Birthdate</label>
-                        <div class="col-sm-10 row">
-                            <div class="md-5">
-                                <input type="date" class="form-control" name="startdate"
-                                    value="<%= query.startdate ? moment(query.startdate).format('YYYY-MM-DD') : '' %>">
-                            </div>
-                            <div class="md-2">
-                                <p>s.d.</p>
-                            </div>
-                            <div class="md-5">
-                                <input type="date" class="form-control" name="todate"
-                                    value="<%= query.todate ? moment(query.todate).format('YYYY-MM-DD') : '' %>">
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Cari</button>
-                </form>
-            </div>
-            <table class="table table-striped">
-                <thead>
+                </div>
+                <button type="submit" class="btn btn-primary">Cari</button>
+            </form>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Nama</th>
+                    <th>Tanggal lahir</th>
+                    <th>avatar</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% rows.forEach(item=> { %>
                     <tr>
-                        <th>No.</th>
-                        <th>Nama</th>
-                        <th>Tanggal lahir</th>
-                        <th>Actions</th>
+                        <td>
+                            <%= item.id %>
+                        </td>
+                        <td>
+                            <%= item.name %>
+                        </td>
+                        <td>
+                            <%= moment(item.birthdate).format('DD MMM YYYY') %>
+                        </td>
+                        <td>
+                            <img src="/images/<%= item.avatar %>" alt="" width="100">
+                        </td>
+                        <td>
+                            <a href="/users/edit/<%= item.id %>" class="btn btn-success">Edit</a>
+                            <a href="/users/delete/<%= item.id %>" class="btn btn-danger">Delete</a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <% rows.forEach(item=> { %>
-                        <tr>
-                            <td>
-                                <%= item.id %>
-                            </td>
-                            <td>
-                                <%= item.name %>
-                            </td>
-                            <td>
-                                <%= moment(item.birthdate).format('DD MMM YYYY') %>
-                            </td>
-                            <td>
-                                <a href="/users/edit/<%= item.id %>" class="btn btn-success">Edit</a>
-                                <a href="/users/delete/<%= item.id %>" class="btn btn-danger">Delete</a>
-                            </td>
-                        </tr>
-                        <% }) %>
-                </tbody>
-            </table>
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                    <li class="page-item<%= page == 1 ? ' disabled' : '' %>">
-                        <a class="page-link" href="/?page=<%= page - 1 %>" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <% for(let i=1; i <=pages; i++){ %>
-                        <li class="page-item<%= page == i ? ' active' : '' %>"><a class="page-link"
-                                href="<%= url.replace(`page=${page}`, `page=${i}`) %>">
-                                <%= i %>
-                            </a></li>
-                        <% } %>
-                            <li class="page-item<%= page == pages ? ' disabled' : '' %>">
-                                <a class="page-link" href="/?page=<%= Number(page) + 1 %>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                </ul>
-            </nav>
-            <div class="card-footer">
-                <a href="/users/add" class="btn btn-primary">Tambah</a>
-            </div>
+                    <% }) %>
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <li class="page-item<%= page == 1 ? ' disabled' : '' %>">
+                    <a class="page-link" href="<%= url.replace(`page=${page}`, `page=${page - 1}`) %>"
+                        aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <% for(let i=1; i <=pages; i++){ %>
+                    <li class="page-item<%= page == i ? ' active' : '' %>"><a class="page-link"
+                            href="<%= url.replace(`page=${page}`, `page=${i}`) %>">
+                            <%= i %>
+                        </a></li>
+                    <% } %>
+                        <li class="page-item<%= page == pages ? ' disabled' : '' %>">
+                            <a class="page-link" href="<%= url.replace(`page=${page}`, `page=${Number(page) + 1}`) %>"
+                                aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+            </ul>
+        </nav>
+        <div class="card-footer">
+            <a href="/users/add" class="btn btn-primary">Tambah</a>
+            <a href="/logout" class="btn btn-danger">Keluar</a>
         </div>
     </div>
 
-</body>
-
-</html>
+    <%- include('../partials/footer') %>
